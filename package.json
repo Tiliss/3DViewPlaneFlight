@@ -1,0 +1,44 @@
+{
+  "name": "threejs_main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config ./bundler/webpack.prod.js",
+    "start": "webpack serve --config ./bundler/webpack.dev.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "babel-loader": "^8.2.2",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.8.1",
+    "file-loader": "^6.2.0",
+    "html-loader": "^4.2.0",
+    "html-webpack-plugin": "^5.5.4",
+    "ip": "^1.1.8",
+    "mini-css-extract-plugin": "^2.7.6",
+    "portfinder-sync": "^0.0.2",
+    "raw-loader": "^4.0.2",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "webpack-merge": "^5.10.0"
+  },
+  "dependencies": {
+    "dgram": "^1.0.1",
+    "http-proxy-middleware": "^2.0.6",
+    "lil-gui": "^0.19.1",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4",
+    "stats.js": "^0.17.0",
+    "three": "^0.159.0",
+    "three.terrain.js": "^2.0.0"
+  }
+}
