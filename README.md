@@ -76,13 +76,13 @@
 5. Клонируйте репозиторий на свой компьютер:
 
     ```
-    git clone https://github.com/Tiliss/3DViewPlane.git
+    git clone https://github.com/Tiliss/3DViewPlaneFlight.git
     ```
 
 6. Перейдите в директорию проекта:
 
     ```
-    cd 3DViewPlane
+    cd 3DViewPlaneFlight
     ```
 
 7. Установите зависимости проекта:
