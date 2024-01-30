@@ -284,10 +284,6 @@ const scene = new THREE.Scene();
 const canvas = document.querySelector('.canvas');
 const secondCanvas = document.querySelector('.secondCanvas')
 
-//вывод осей для помощи ориентирования
-const axesHelper = new THREE.AxesHelper(600);
-scene.add(axesHelper);
-
 //Панель дебагинг
 const gui = new dat.GUI({
     closeFolders: false,
