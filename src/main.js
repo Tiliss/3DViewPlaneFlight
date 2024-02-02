@@ -9,7 +9,7 @@ import { ThirdPersonCamera } from './ThirdPersonCamera.js'
 import io from 'socket.io-client';
 
 // Путь к JSON-файлу настроек сервера
-const jsonFilePath = 'ServerSettings.json';
+const jsonFilePath = 'serverSettings.json';
 
 // Функция для загрузки JSON файла с использованием колбэков
 function loadJsonFile(filePath, callback) {
@@ -344,7 +344,15 @@ function removeOption(optionToRemove) {
 const interfaceFolder = gui.addFolder('Interface').open(false)
 const cameraFolder = gui.addFolder('Cameras');
 const experementalFolder = gui.addFolder('Experemental').open(false);
-experementalFolder.add(secondOptions, 'autoFly').name('Automatic flight').onChange();
+experementalFolder.add(secondOptions, 'autoFly').name('Automatic flight').onChange(automaticFlight);
+function automaticFlight()
+{
+    if(secondOptions.autoFly) {
+        updateAirplane();
+    }
+    
+}
+
 experementalFolder.add(secondOptions, 'manualСontrol').name('Manual control').onChange();
 
 //Скрыть/Показать статистику
@@ -678,6 +686,9 @@ function updateAirplane() {
             currentIndex++;
         }
 
+        if(currentIndex == vectorPointRouteArray.length) {
+            currentIndex = 0;
+        }
         // Обновляем время
         lastTime = currentTime;
     }
@@ -821,7 +832,10 @@ let relativeCameraPosition = new THREE.Vector3(0, 50, 200);
 const animate = () => {
     stats.begin();
     if (airplaneModel) {
-        //updateAirplane();
+        if(secondOptions.autoFly)
+        {
+            updateAirplane();
+        }
         updateTerrainChunks();
         thirdPersonCamera.Update(clock.getDelta());
 

@@ -7,7 +7,7 @@ class CoordinatesConverter {
 
     // Метод для преобразования широты и долготы в координаты x, y, z
     convertCoordinates() {
-        const radius = 6371000; // Радиус Земли в метрах
+        const radius = 6371; // Радиус Земли в метрах
 
         // Преобразование географических координат в радианы
         const latRad = (this.latitude * Math.PI) / 180;

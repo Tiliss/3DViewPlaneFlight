@@ -12,7 +12,7 @@ process.noDeprecation = true; //Время от времени отключат�
 
 let settings;
 //Путь к JSON-файлу с настройками
-const pathToJsonFile = './static/ServerSettings.json';
+const pathToJsonFile = './static/serverSettings.json';
 // Чтение содержимого файла JSON
 try {
     const data = fs.readFileSync(pathToJsonFile, 'utf8');
