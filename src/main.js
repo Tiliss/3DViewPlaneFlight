@@ -4,12 +4,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'stats.js';
 import * as dat from 'lil-gui';
 import './style.css';
-import { PathUpdate, ObjectUpdate, PositionUpdate } from './JsonReader.js'
 import { CoordinatesConverter } from './CoordinatesConverter.js';
+import { ThirdPersonCamera } from './ThirdPersonCamera.js' 
 import io from 'socket.io-client';
 
 // Путь к JSON-файлу настроек сервера
-const jsonFilePath = 'serversettings.json';
+const jsonFilePath = 'ServerSettings.json';
 
 // Функция для загрузки JSON файла с использованием колбэков
 function loadJsonFile(filePath, callback) {
@@ -47,13 +47,13 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
                 //GetJsonArray(jsonData);
                 switch (jsonData.what) {
                     case 'update_path':
-                        GetPath(jsonData);
+                        getPath(jsonData);
                         break;
                     case 'update_objects':
-                        GetObject(jsonData);
+                        getObject(jsonData);
                         break;
                     case 'update_positions':
-                        GetPosition(jsonData);
+                        getPosition(jsonData);
                         break;
                 }
 
@@ -68,88 +68,89 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
     }
 });
 
-
 let vectorPointRouteArray = []; //Массив точек маршрута
 let intitialX, intitialY, intitialZ;
 let airplaneModel; //Модель самолета
 let lastTime = Date.now(); //Текушее время для вычисления скорости
 let currentIndex = 0; //Точка в которой самолет находится в данный момент
 
-function GetObject(jsonData) {
-    const obj = new ObjectUpdate(jsonData.what, jsonData.objects);
-    let objs = obj.getObjects();
-    console.log(objs);
+//Функция при получнии json с объектом
+function getObject(jsonData) {
+    LoadModel(jsonData);
 }
 
-//функция получения данных из json 
-function GetPath(jsonData) {
+//функция при получении json с маршрутами
+function getPath(jsonData) {
 
-    //Удалаяем старую линию маршрута, если она есть
-    if (scene.getObjectByName("routeLine")) {
-        scene.remove(scene.getObjectByName("routeLine"));
-    }
-
-    const pathUpdateInstance = new PathUpdate(jsonData.what, jsonData.paths);
-    vectorPointRouteArray = [];
-    currentIndex = 0;
-
-    for (const path of pathUpdateInstance.paths) {
-        for (const position of path.positions) {
-            const converter = new CoordinatesConverter(position.lat, position.lon, position.alt);
-            const converterCoordinates = converter.convertCoordinates();
-
-            if (currentIndex === 0) {
-                intitialX = parseFloat(converterCoordinates.x).toFixed(2);
-                intitialY = parseFloat(position.alt);
-                intitialZ = parseFloat(converterCoordinates.z).toFixed(2);
-                airplaneModel.position.y = parseFloat(intitialY);
-                airplaneModel.position.x = parseFloat(intitialX);
-                airplaneModel.position.z = parseFloat(intitialZ);
+    jsonData.paths.forEach(path => {
+        const id = path.id;
+        const isRemove = path.isRemove;
+        console.log("id:", id, "isRemove:", isRemove);
+        if (scene.getObjectByName(id)) {
+            if (isRemove) {
+                scene.remove(scene.getObjectByName(id));
             }
-
-            const vector3 = new THREE.Vector3(
-                parseFloat(converterCoordinates.x).toFixed(2),
-                parseFloat(position.alt),
-                parseFloat(converterCoordinates.z).toFixed(2)
-            );
-            vectorPointRouteArray.push(vector3);
         }
-    }
+        else {
+            if (!isRemove) {
+                vectorPointRouteArray = [];
+                currentIndex = 0;
 
-    //задаем начальное положение самолета
-    airplaneModel.position.y = parseFloat(intitialY);
-    airplaneModel.position.x = parseFloat(intitialX);
-    airplaneModel.position.z = parseFloat(intitialZ);
+                for (const position of path.positions) {
+                    const converter = new CoordinatesConverter(position.lat, position.lon, position.alt);
+                    const converterCoordinates = converter.convertCoordinates();
 
-    // Создание геометрии линии с использованием точек маршрута
-    const lineGeometry = new THREE.BufferGeometry().setFromPoints(vectorPointRouteArray);
+                    // if (currentIndex === 0) {
+                    //     intitialX = parseFloat(converterCoordinates.x).toFixed(2);
+                    //     intitialY = parseFloat(position.alt);
+                    //     intitialZ = parseFloat(converterCoordinates.z).toFixed(2);
+                    // }
+                    const vector3 = new THREE.Vector3(
+                        parseFloat(converterCoordinates.x).toFixed(2),
+                        parseFloat(position.alt),
+                        parseFloat(converterCoordinates.z).toFixed(2)
+                    );
+                    vectorPointRouteArray.push(vector3);
+                }
 
-    // Материал для линии (например, красный цвет)
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+                // //задаем начальное положение самолета
+                // airplaneModel.position.y = parseFloat(intitialY);
+                // airplaneModel.position.x = parseFloat(intitialX);
+                // airplaneModel.position.z = parseFloat(intitialZ);
 
-    // Создание линии с использованием геометрии и материала
-    const line = new THREE.Line(lineGeometry, lineMaterial);
+                // Создание геометрии линии с использованием точек маршрута
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(vectorPointRouteArray);
 
-    line.name = "routeLine";
+                // Материал для линии (например, красный цвет)
+                const lineMaterial = new THREE.LineBasicMaterial({ color: path.color, linewidth: 2});
 
-    // Добавление линии в сцену
-    scene.add(line);
-    console.log(vectorPointRouteArray);
-    //запуск анимации
-    updateAirplane();
+                // Создание линии с использованием геометрии и материала
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+
+                line.name = id;
+
+                // Добавление линии в сцену
+                scene.add(line);
+                console.log(vectorPointRouteArray);
+
+                //запуск анимации
+                // updateAirplane();
+            }
+        }
+    });
 };
 
-function GetPosition(jsonData) {
-    vectorPointRouteArray = [];
-    const positionUpdateInstance = new PositionUpdate(jsonData.what, jsonData.positions);
-    for (const position of positionUpdateInstance.positions) {
-        if (position.id === 'obj1') {
+//Функция получения позиции
+function getPosition(jsonData) {
+    jsonData.positions.forEach(position => {
+        if(scene.getObjectByName(position.id))
+        {
             const converter = new CoordinatesConverter(position.lat, position.lon, position.alt);
             const converterCoordinates = converter.convertCoordinates();
-            airplaneModel.position.x = parseFloat((converterCoordinates.x).toFixed(2));
-            airplaneModel.position.y = parseFloat((position.alt).toFixed(2));
-            airplaneModel.position.z = parseFloat((converterCoordinates.z).toFixed(2));
-
+            scene.getObjectByName(position.id).position.x = parseFloat((converterCoordinates.x).toFixed(2));
+            scene.getObjectByName(position.id).position.y = parseFloat((position.alt).toFixed(2));
+            scene.getObjectByName(position.id).position.z = parseFloat((converterCoordinates.z).toFixed(2));
+    
             // Установка углов поворота через кватернион
             const quaternion = new THREE.Quaternion();
             quaternion.setFromEuler(new THREE.Euler(
@@ -158,52 +159,10 @@ function GetPosition(jsonData) {
                 THREE.MathUtils.degToRad(position.roll),   // крен
                 'XYZ'
             ));
-            airplaneModel.quaternion.copy(quaternion);
-
-            console.log(parseFloat(converterCoordinates.x).toFixed(2), parseFloat(position.alt), parseFloat(converterCoordinates.z).toFixed(2), position.roll, position.pitch, position.yaw);
+            scene.getObjectByName(position.id).quaternion.copy(quaternion); 
         }
-    }
+    })
 }
-
-LoadModel();
-
-//Класс для создания камеры третьего лица
-class ThirdPersonCamera {
-    constructor(params) {
-        this._params = params;
-        this._camera = params.camera;
-        this._currentPosition = new THREE.Vector3();
-        this._currentLookat = new THREE.Vector3();
-    }
-
-    _CalculateIdealOffset() {
-        const idealOffset = new THREE.Vector3(0, -40, -100); // Изменено начальное положение (переместилось назад)
-        idealOffset.applyQuaternion(this._params.target.Rotation);
-        const offsetPosition = new THREE.Vector3().copy(this._params.target.Position).sub(idealOffset);
-        return offsetPosition;
-    }
-
-    _CalculateIdealLookat() {
-        const lookatPosition = new THREE.Vector3(0, 50, 0);
-        lookatPosition.applyQuaternion(this._params.target.Rotation);
-        const lookat = new THREE.Vector3().copy(this._params.target.Position).add(lookatPosition);
-        return lookat;
-    }
-
-    Update(timeElapsed) {
-        const idealOffset = this._CalculateIdealOffset();
-        const idealLookat = this._CalculateIdealLookat();
-
-        const t = 1.0 - Math.pow(0.001, timeElapsed);
-
-        this._currentPosition.lerp(idealOffset, t);
-        this._currentLookat.lerp(idealLookat, t);
-
-        this._camera.position.copy(this._currentPosition);
-        this._camera.lookAt(this._currentLookat);
-    }
-}
-
 
 //Английская раскладка
 const keysEN = {
@@ -284,6 +243,10 @@ const scene = new THREE.Scene();
 const canvas = document.querySelector('.canvas');
 const secondCanvas = document.querySelector('.secondCanvas')
 
+//вывод осей для помощи ориентирования
+const axesHelper = new THREE.AxesHelper(600);
+scene.add(axesHelper);
+
 //Панель дебагинг
 const gui = new dat.GUI({
     closeFolders: false,
@@ -301,8 +264,13 @@ const sizes = {
     heightSC: secondCanvas.innerHeight,
 };
 
-let groundMaterial;
-var secondCanvasOptions = { showSecondCanvas: false };
+var secondOptions = {
+    showSecondCanvas: false,
+    autoFly: false,
+    manualСontrol: false,
+    showStats: true,
+    showCoords: true
+};
 
 const sliders = {
     widthSeg: 100,
@@ -313,6 +281,11 @@ const sliders = {
     dispScale: 400,
     distance: 2500, //дистаниция прорисовки
 };
+
+const guiObjectParams = {
+    selectedOptions: 'empty',
+    options: [],
+}
 
 /*
     Создание камер
@@ -336,10 +309,58 @@ scene.add(firstCamera);
 scene.add(activeCamera);
 
 
+
 gui.add(sliders, 'distance').min(200).max(2500).step(5).name('Draw distance').onChange(updateCamera); //Изменение дистанции прорисовки
+
+const dropDownObj = gui.add(guiObjectParams, 'selectedOptions', guiObjectParams.options).name('Select object').onChange(switchObject);
+function switchObject()
+{
+    if(guiObjectParams.selectedOptions != 'empty')
+    {
+        airplaneModel = scene.getObjectByName(guiObjectParams.selectedOptions);
+        const newPosition = airplaneModel.position;
+        const newRotation = airplaneModel.quaternion;
+        thirdPersonCamera.setCameraTarget(newPosition, newRotation); 
+    }
+}
+
+
+function addOption(newOption) {
+    guiObjectParams.options.push(newOption);
+    dropDownObj.options(guiObjectParams.options); // Обновляем список в выпадающем списке
+}
+function removeOption(optionToRemove) {
+    const index = guiObjectParams.options.indexOf(optionToRemove);
+    if (index !== -1) {
+        guiObjectParams.options.splice(index, 1); // Удаляем элемент из массива
+        dropDownObj.options(guiObjectParams.options); // Обновляем список в выпадающем списке
+    }
+    // Если список пустой, выставляем выбранное значение в null или пустую строку
+    if (guiObjectParams.options.length === 0) {
+        dropDownObj.setValue('empty');
+        //guiObjectParams.options.splice(0, guiObjectParams.options.splice.length);
+    }
+}
+const interfaceFolder = gui.addFolder('Interface').open(false)
 const cameraFolder = gui.addFolder('Cameras');
+const experementalFolder = gui.addFolder('Experemental').open(false);
+experementalFolder.add(secondOptions, 'autoFly').name('Automatic flight').onChange();
+experementalFolder.add(secondOptions, 'manualСontrol').name('Manual control').onChange();
+
+//Скрыть/Показать статистику
+interfaceFolder.add(secondOptions, 'showStats').name('Show stats').onChange(showStats);
+function showStats() {
+    stats.dom.style.display = secondOptions.showStats ? 'block' : 'none';
+}
+
+//Скрыть/Показать координаты
+interfaceFolder.add(secondOptions, 'showCoords').name('Show coordinates').onChange(showCoordinates);
+function showCoordinates() {
+    document.getElementById('textContainer').style.display = secondOptions.showCoords ? 'block' : 'none';
+}
+
 viewSlider = cameraFolder.add(viewOptions, 'view', ['Third Person', 'Orbital']).name('View').onChange(switchCamera);
-cameraFolder.add(secondCanvasOptions, 'showSecondCanvas').name("Cockpit camera").onChange(handleCheckboxChange);
+cameraFolder.add(secondOptions, 'showSecondCanvas').name("Cockpit camera").onChange(handleCheckboxChange);
 function handleCheckboxChange(value) {
     if (secondCanvas) {
         secondCanvas.style.display = value ? 'block' : 'none';
@@ -388,39 +409,64 @@ function updateActiveCamera() {
 }
 
 
-const terrainChunks = new Map();
-
+let anim = false;
 //Метод загрузки модели
-function LoadModel(intitialX, intitialY, intitialZ) {
+function LoadModel(jsonData) {
     const loader = new GLTFLoader();
-    loader.load('models/airplane/plane.gltf', (gltf) => {
-        gltf.scene.traverse(c => {
-            c.castShadow = true;
-        });
-        gltf.scene.position.y = 200;
-        gltf.scene.position.x = 0;
-        gltf.scene.position.z = 0;
-        gltf.scene.scale.set(0.5, 0.5, 0.5);
-        airplaneModel = gltf.scene;
-        scene.add(airplaneModel);
 
-        // Создайте экземпляр ThirdPersonCamera внутри обратного вызова
-        const thirdPersonCamera = new ThirdPersonCamera({
-            camera: camera,
-            target: {
-                Position: airplaneModel.position,
-                Rotation: airplaneModel.quaternion,
-            },
-        });
+    jsonData.objects.forEach(object => {
+        const id = object.id;
+        const isRemove = object.isRemove;
+        const type = object.type;
+        console.log("id:", id, "isRemove:", isRemove);
+        if (scene.getObjectByName(id)) {
+            if (isRemove) {
+                scene.remove(scene.getObjectByName(id));
+                removeOption(id);
+            }
+        }
+        else {
+            if (!isRemove) {
+                loader.load('models/airplane/plane.gltf', (gltf) => {
+                    gltf.scene.traverse(c => {
+                        c.castShadow = true;
+                    });
+                    gltf.scene.position.y = 200;
+                    gltf.scene.position.x = 0;
+                    gltf.scene.position.z = 0;
+                    gltf.scene.scale.set(0.5, 0.5, 0.5);
+                    gltf.scene.name = id;
+                    airplaneModel = gltf.scene;
+                    scene.add(gltf.scene);
 
-        // Используйте thirdPersonCamera по мере необходимости
-        window.thirdPersonCamera = thirdPersonCamera;
-        airplaneModel.add(firstCamera);
-        animate();
-    });
+                    // Создайте экземпляр ThirdPersonCamera внутри обратного вызова
+                    const thirdPersonCamera = new ThirdPersonCamera({
+                        camera: camera,
+                        target: {
+                            Position: airplaneModel.position,
+                            Rotation: airplaneModel.quaternion,
+                        },
+                    });
+
+                    // Используйте thirdPersonCamera по мере необходимости
+                    window.thirdPersonCamera = thirdPersonCamera;
+                    airplaneModel.add(firstCamera);
+                    addOption(id);
+                    dropDownObj.setValue(id);
+                    if (!anim) {
+                        animate();
+                        anim = true;
+                    }
+                });
+            }
+        }
+    })
 }
 
 let groundGeo;
+let groundMaterial; //материал поверхности
+const terrainChunks = new Map();
+
 function createGround() {
 
     groundGeo = new THREE.PlaneGeometry(1400, 1400, sliders.widthSeg, sliders.heightSeg)
@@ -775,10 +821,10 @@ let relativeCameraPosition = new THREE.Vector3(0, 50, 200);
 const animate = () => {
     stats.begin();
     if (airplaneModel) {
-        updateAirplane();
+        //updateAirplane();
         updateTerrainChunks();
-    }
-    if (airplaneModel) {
+        thirdPersonCamera.Update(clock.getDelta());
+
         // Сохраняем текущую позицию относительно самолета
         relativeCameraPosition.copy(airplaneModel.position);
 
@@ -793,14 +839,14 @@ const animate = () => {
         }
         controls.update();
     }
-    //const delta = clock.getDelta();     
     renderer.render(scene, activeCamera);
 
-    if (secondCanvasOptions.showSecondCanvas) {
+    if (secondOptions.showSecondCanvas) {
         rendererSecondCanvas.render(scene, firstCamera);
         updateFirstPersonCamera();
         console.log('active')
     }
+
     stats.end();
     updateCoordinates();
     window.requestAnimationFrame(animate);
