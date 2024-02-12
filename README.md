@@ -1,6 +1,6 @@
-# 3D View Plane Flight Visualization
+# 3D View Flight Visualization
 
-![Example GIF](https://github.com/Tiliss/3DViewPlaneFlight/blob/gg/image/plane.gif)
+![Example GIF](https://github.com/Tiliss/3DViewFlightVisualization/blob/gg/image/plane.gif)
 
 ## Описание
 
