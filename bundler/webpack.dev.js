@@ -12,7 +12,7 @@ process.noDeprecation = true; //Время от времени отключат�
 
 let settings;
 //Путь к JSON-файлу с настройками
-const pathToJsonFile = './static/serversettings.json';
+const pathToJsonFile = './static/serverSettings.json';
 // Чтение содержимого файла JSON
 try {
     const data = fs.readFileSync(pathToJsonFile, 'utf8');
@@ -21,7 +21,26 @@ try {
     console.error('Error reading or parsing JSON file:', error);
 }
 
-let clientSocket;
+let clientSockets = [];
+
+// Отправляем данные всем подключенным клиентам
+function sendToAllClients(data) {
+    clientSockets.forEach(socket => {
+        // Проверяем, подключен ли сокет
+        if (socket.connected) {
+            socket.emit('message', JSON.stringify(data));
+        }
+    });
+}
+
+function sendToSelectedClients(data, client) {
+    clientSockets.forEach(socket => {
+        // Проверяем, подключен ли сокет
+        if (socket.connected && socket.id == client) {
+            socket.emit('message', JSON.stringify(data));
+        }
+    });
+}
 
 const serverTCP = net.createServer();
 serverTCP.on('connection', (socket) => {
@@ -29,17 +48,39 @@ serverTCP.on('connection', (socket) => {
 
     socket.on('data', (data) => {
 
-        if (clientSocket) {
-            clientSocket.emit('message', JSON.stringify(JSON.parse(data)));
-            // Отправка ответа обратно клиенту
-            const responseMessage = 'Success';
+        if (clientSockets.length > 0) {
+            let jsonClients = JSON.parse(data)
+            if (jsonClients.what === "get_clientsID") {
+                let clients = []
+                console.log(clientSockets.id)
+                clientSockets.forEach(socket => {
+                    // Проверяем, подключен ли сокет
+                    if (socket.connected) {
+                        clients.push(socket.id)
+                    }
+                });
+                let clientsString = clients.join(";");
+                socket.write(clientsString);
+            }
+            else if (jsonClients.what === "update_cam") {
+                console.log(jsonClients.client);
+                sendToSelectedClients(JSON.parse(data), jsonClients.client);
+                // Отправка ответа обратно клиенту
+                const responseMessage = 'Success';
+                socket.write(responseMessage);
+            }
+            else {
+                sendToAllClients(JSON.parse(data));
+                // Отправка ответа обратно клиенту
+                const responseMessage = 'Success';
+                socket.write(responseMessage);
+            }
+
+        } else {
+            // Отправка ответа обратно клиенту о том, что нет подключенных сокетов
+            const responseMessage = 'No connected sockets';
             socket.write(responseMessage);
         }
-        else{
-            socket.write('Client socket.io disconnect');
-        }
-        
-        
     });
 
     // Обработка закрытия соединения
@@ -67,12 +108,12 @@ const io = socketIO(server, {
 });
 io.on('connection', (socket) => {
     console.log(`${clientConnectColor('Client socket.io connected')}`);
-
-    clientSocket = socket;
+    clientSockets.push(socket);
+    console.log(socket.id);
 
     socket.on('disconnect', () => {
         console.log(`${clientDisconnectColor('Client socket.io disconnected')}`);
-        clientSocket = undefined;
+        clientSockets = clientSockets.filter(client => client !== socket);
     });
 });
 // Запуск сервера
