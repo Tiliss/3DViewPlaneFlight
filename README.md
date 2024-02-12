@@ -109,51 +109,7 @@
 }
 ```
 
-Для загрузки карт перенесите папку с картой высот и ее текстурой в директорию `static/textures/map`, а затем добавьте карту в файл `settings.json`:
-
-```jsonc
-"map": [
-    {
-      "name": "Mountains", //Название, отображаемое в настройках
-      "pathHeightMap": "Mountains/HeightMap.png", //Путь до карты высот
-      "pathTextureMap": "Mountains/TexturesMap.png" //Путь до текстур
-    },
-    {
-      "name": "Canyon",
-      "pathHeightMap": "Сanyon/HeightMap.png",
-      "pathTextureMap": "Сanyon/TextureMap.png"
-    },
-    {
-      "name": "Snow",
-      "pathHeightMap": "Snow/HeightMap.png",
-      "pathTextureMap": "Snow/TexturesMap.png"
-    }
-  ],
-```
-
-Для загрузки моделей, переместите в директорию `static/models` папку с моделью формата __FBX__, а затем добавьте модель в файл `settings.json`:
-
-```jsonc
-"models": [
-    {
-      "type": "Plane", //Название, для запроса на создание или удаление
-      "path": "/models/airplaneFBX/airplane.fbx", //Полный путь до модели формата fbx
-      "rotationX": "0", //Поворот по оси X
-      "rotationY": "0", //Поворот по оси Y
-      "rotationZ": "0", //Поворот по оси Z
-      "scale": "0.005" //Маштаб модели
-    },
-    {
-      "type": "Rocket",
-      "path": "/models/rocket/Rocket.fbx",
-      "rotationX": "0",
-      "rotationY": "0",
-      "rotationZ": "0",
-      "scale": "0.001"
-    }
-  ]
-```
-  Этот файл содержит настройки портов для TCP, HTTP и WebSocket серверов, подключение загруженных карт и моделей.
+Этот файл содержит настройки портов для TCP, HTTP и WebSocket серверов.
 
 ## Запуск приложения
 
@@ -173,27 +129,27 @@
 
 ## Работа с сервером
 
-Для корректной работы приложения необходимо настроить подключение к серверу и отправку двух видов JSON-сообщений.
+Для корректной работы приложения необходимо настроить подключение к серверу и отправку шести видов JSON-сообщений.
 
 ### Подключение к серверу
 
-Приложению необходимо подключиться к серверу, используя порт, указанный в файле `serversettings.json`.
+Приложению необходимо подключиться к серверу, используя порт, указанный в файле `settings.json`.
 
-### Отправка JSON-сообщений (В данный момент только один объект)
+### Отправка JSON-сообщений
 
 1. **Обновление пути**:
 
-```json
+```jsonc
 {   
-    "what": "update_path",
+    "what": "update_path", //Обозначние json объекта
     "paths": [{
-      "id": "path1",
-      "isRemove": false,
-      "color": "#111111",
+      "id": "path1", //id пути
+      "isRemove": false, //false - создать, true - удалить
+      "color": "#111111", //Цвет ображаемой линии пути
       "positions": [{
-        "lat": -148.42995429865525, 
-        "lon": 15.097558831555673, 
-        "alt": 200
+        "lat": -148.42995429865525, //Широта
+        "lon": 15.097558831555673, //Долгота
+        "alt": 200 //Высота в метрах
       },
       {
         "lat": -148.42995429865525, 
@@ -278,18 +234,18 @@
 
 ```
 2. **Обновление положения**:
-```json
+```jsonc
 {
-	"what": "update_positions",
+	"what": "update_positions", //Обозначние json объекта
 	"positions": [
 		{
-			"id": "obj1",
-			"lat": 125.98242506147994,
-			"lon": 29.66258160855277,
-			"alt": 200,
-			"roll": 30.0,
-			"pitch": -10.0,
-			"yaw": 180.0
+			"id": "obj1", //id объекта к которому применяется позиция
+			"lat": 125.98242506147994, //Широта
+			"lon": 29.66258160855277, //Долгота 
+			"alt": 200, //Высота в метрах
+			"roll": 30.0, //Крен в градусах
+			"pitch": -10.0, //Тангаж в градусах
+			"yaw": 180.0 //Рысканье в градусах
 		},
 		{
 			"id": "obj2",
@@ -305,14 +261,14 @@
 ```
 
 3. **Обновление объектов**: 
-```json
+```jsonc
 {
-	"what": "update_objects",
+	"what": "update_objects", //Обозначние json объекта
 	"objects":[
 	{
-		"id": "obj1",
-		"type": "Plane",
-		"isRemove": false
+		"id": "obj1", //id объекта
+		"type": "Plane", //Тип объекта, совпадает с названием модели в settings.json
+		"isRemove": false //false - создать, true - удалить
 	},
 	{
 		"id": "obj2",
@@ -321,4 +277,74 @@
 	}
 	]
 }
+```
+
+4. **Переключение карт**
+```jsonc
+{
+	"what": "update_map", //Обозначние json объекта
+	"name": "Water" //Имя, отображаемое в настройках
+}
+```
+
+5. **Запрос на получение id подключенных websocket клиентов**
+```jsonc
+{
+	"what": "get_clientsID" //Обозначние json объекта
+}
+```
+6. **Переключение камер определенного клиента**
+```jsonc
+{
+	"what": "update_cam", //Обозначние json объекта
+	"name": "Orbital", //Имя, отображаемое в настройках
+	"client": "oVJ1QujH3sow1Wn7AAAF" //id клиента полученного с помощью "Запрос на получение id подключенных websocket клиентов"
+}
+```
+
+### Загрузка карт и моделей ###
+
+Для загрузки карт перенесите папку с картой высот и ее текстурой в директорию `static/textures/map`, а затем добавьте карту в файл `settings.json`:
+
+```jsonc
+"map": [
+    {
+      "name": "Mountains", //Название, отображаемое в настройках
+      "pathHeightMap": "Mountains/HeightMap.png", //Путь до карты высот
+      "pathTextureMap": "Mountains/TexturesMap.png" //Путь до текстур
+    },
+    {
+      "name": "Canyon",
+      "pathHeightMap": "Сanyon/HeightMap.png",
+      "pathTextureMap": "Сanyon/TextureMap.png"
+    },
+    {
+      "name": "Snow",
+      "pathHeightMap": "Snow/HeightMap.png",
+      "pathTextureMap": "Snow/TexturesMap.png"
+    }
+  ],
+```
+
+Для загрузки моделей, переместите в директорию `static/models` папку с моделью формата __FBX__, а затем добавьте модель в файл `settings.json`:
+
+```jsonc
+"models": [
+    {
+      "type": "Plane", //Название, для запроса на создание или удаление
+      "path": "/models/airplaneFBX/airplane.fbx", //Полный путь до модели формата fbx
+      "rotationX": "0", //Поворот по оси X
+      "rotationY": "0", //Поворот по оси Y
+      "rotationZ": "0", //Поворот по оси Z
+      "scale": "0.005" //Маштаб модели
+    },
+    {
+      "type": "Rocket",
+      "path": "/models/rocket/Rocket.fbx",
+      "rotationX": "0",
+      "rotationY": "0",
+      "rotationZ": "0",
+      "scale": "0.001"
+    }
+  ]
 ```
