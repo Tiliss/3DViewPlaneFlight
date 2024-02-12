@@ -8,5 +8,40 @@
   },
   "WebSocket": {
     "port": 3001
-  }
+  },
+  "map": [
+    {
+      "name": "Mountains",
+      "pathHeightMap": "Mountains/HeightMap.png", 
+      "pathTextureMap": "Mountains/TexturesMap.png"
+    },
+    {
+      "name": "Canyon",
+      "pathHeightMap": "Сanyon/HeightMap.png",
+      "pathTextureMap": "Сanyon/TextureMap.png"
+    },
+    {
+      "name": "Snow",
+      "pathHeightMap": "Snow/HeightMap.png",
+      "pathTextureMap": "Snow/TexturesMap.png"
+    }
+  ],
+  "models": [
+    {
+      "type": "Plane",
+      "path": "/models/airplaneFBX/airplane.fbx",
+      "rotationX": "0",
+      "rotationY": "0",
+      "rotationZ": "0",
+      "scale": "0.005"
+    },
+    {
+      "type": "Rocket",
+      "path": "/models/rocket/Rocket.fbx",
+      "rotationX": "0",
+      "rotationY": "0",
+      "rotationZ": "0",
+      "scale": "0.001"
+    }
+  ]
 }

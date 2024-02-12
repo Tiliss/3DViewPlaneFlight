@@ -33,6 +33,15 @@ function sendToAllClients(data) {
     });
 }
 
+function sendToSelectedClients(data, client) {
+    clientSockets.forEach(socket => {
+        // Проверяем, подключен ли сокет
+        if (socket.connected && socket.id == client) {
+            socket.emit('message', JSON.stringify(data));
+        }
+    });
+}
+
 const serverTCP = net.createServer();
 serverTCP.on('connection', (socket) => {
     console.log(`${clientConnectColor(`Client TCP connected: ${socket.remoteAddress}:${socket.remotePort}`)}`);
@@ -40,10 +49,33 @@ serverTCP.on('connection', (socket) => {
     socket.on('data', (data) => {
 
         if (clientSockets.length > 0) {
-            sendToAllClients(JSON.parse(data));
-            // Отправка ответа обратно клиенту
-            const responseMessage = 'Success';
-            socket.write(responseMessage);
+            let jsonClients = JSON.parse(data)
+            if (jsonClients.what === "get_clientsID") {
+                let clients = []
+                console.log(clientSockets.id)
+                clientSockets.forEach(socket => {
+                    // Проверяем, подключен ли сокет
+                    if (socket.connected) {
+                        clients.push(socket.id)
+                    }
+                });
+                let clientsString = clients.join(";");
+                socket.write(clientsString);
+            }
+            else if (jsonClients.what === "update_cam") {
+                console.log(jsonClients.client);
+                sendToSelectedClients(JSON.parse(data), jsonClients.client);
+                // Отправка ответа обратно клиенту
+                const responseMessage = 'Success';
+                socket.write(responseMessage);
+            }
+            else {
+                sendToAllClients(JSON.parse(data));
+                // Отправка ответа обратно клиенту
+                const responseMessage = 'Success';
+                socket.write(responseMessage);
+            }
+
         } else {
             // Отправка ответа обратно клиенту о том, что нет подключенных сокетов
             const responseMessage = 'No connected sockets';
@@ -76,12 +108,12 @@ const io = socketIO(server, {
 });
 io.on('connection', (socket) => {
     console.log(`${clientConnectColor('Client socket.io connected')}`);
-
     clientSockets.push(socket);
+    console.log(socket.id);
 
     socket.on('disconnect', () => {
         console.log(`${clientDisconnectColor('Client socket.io disconnected')}`);
-        clientSockets = clientSockets.filter(client => client !== socket);;
+        clientSockets = clientSockets.filter(client => client !== socket);
     });
 });
 // Запуск сервера
