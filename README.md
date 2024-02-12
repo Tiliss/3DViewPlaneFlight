@@ -1,4 +1,7 @@
 # 3D View Plane Flight Visualization
+
+![Example GIF](https://github.com/Tiliss/3DViewPlaneFlight/blob/gg/image/plane.gif)
+
 ## Описание
 
 Проект визуализации полета самолета в 3D представляет собой инструмент для наглядного отображения полетов в трехмерном пространстве.
