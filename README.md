@@ -88,11 +88,11 @@
     ```
     npm install
     ```
-# Запуск приложения с использованием файла ServerSettings.json
+# Запуск приложения с использованием файла settings.json
 
 ## Настройка портов и сервера
 
-В директории `static` в файле `serversettings.json` настройте порты для серверов:
+В директории `static` в файле `settings.json` настройте порты для серверов:
 
 ```jsonc
 {
@@ -108,8 +108,53 @@
   }
 }
 ```
-  Этот файл содержит настройки портов для TCP, HTTP и WebSocket серверов.
 
+Для загрузки карт перенесите папку с картой высот и ее текстурой в директорию 'static/textures/map', а затем добавьте карту в файл 'settings.json':
+
+```jsonc
+"map": [
+    {
+      "name": "Mountains", //Название, отображаемое в настройках
+      "pathHeightMap": "Mountains/HeightMap.png", //Путь до карты высот
+      "pathTextureMap": "Mountains/TexturesMap.png" //Путь до текстур
+    },
+    {
+      "name": "Canyon",
+      "pathHeightMap": "Сanyon/HeightMap.png",
+      "pathTextureMap": "Сanyon/TextureMap.png"
+    },
+    {
+      "name": "Snow",
+      "pathHeightMap": "Snow/HeightMap.png",
+      "pathTextureMap": "Snow/TexturesMap.png"
+    }
+  ],
+```
+
+Для загрузки моделей, переместите в директорию 'static/models' папку с моделью формата __FBX__, а затем добавьте модель в файл 'settings.json':
+
+```jsonc
+"models": [
+    {
+      "type": "Plane", // Название, для запроса на создание или удаление
+      "path": "/models/airplaneFBX/airplane.fbx", //Полный путь до модели формата fbx
+      "rotationX": "0", //Поворот по оси X
+      "rotationY": "0", //Поворот по оси Y
+      "rotationZ": "0", //Поворот по оси Z
+      "scale": "0.005" //Маштаб модели
+    },
+    {
+      "type": "Rocket",
+      "path": "/models/rocket/Rocket.fbx",
+      "rotationX": "0",
+      "rotationY": "0",
+      "rotationZ": "0",
+      "scale": "0.001"
+    }
+  ]
+```
+  Этот файл содержит настройки портов для TCP, HTTP и WebSocket серверов, подключение загруженных карт и моделей.
+  
 ## Запуск приложения
 
 2. Откройте терминал и перейдите в директорию вашего проекта.
