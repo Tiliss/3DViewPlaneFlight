@@ -1,6 +1,7 @@
 # 3D View Flight Visualization
-
-![Example GIF](https://github.com/Tiliss/3DViewFlightVisualization/blob/gg/image/plane.gif)
+<p align="center">
+  <img src="https://github.com/Tiliss/3DViewFlightVisualization/blob/gg/image/plane.gif" width="400" height="300" />
+</p>
 
 ## Описание
 
