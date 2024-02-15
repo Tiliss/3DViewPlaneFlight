@@ -47,7 +47,6 @@ serverTCP.on('connection', (socket) => {
     console.log(`${clientConnectColor(`Client TCP connected: ${socket.remoteAddress}:${socket.remotePort}`)}`);
 
     socket.on('data', (data) => {
-
         if (clientSockets.length > 0) {
             let jsonClients = JSON.parse(data)
             if (jsonClients.what === "get_clientsID") {
@@ -109,7 +108,6 @@ const io = socketIO(server, {
 io.on('connection', (socket) => {
     console.log(`${clientConnectColor('Client socket.io connected')}`);
     clientSockets.push(socket);
-    console.log(socket.id);
 
     socket.on('disconnect', () => {
         console.log(`${clientDisconnectColor('Client socket.io disconnected')}`);
