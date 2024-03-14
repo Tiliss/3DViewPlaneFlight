@@ -12,7 +12,7 @@ process.noDeprecation = true; //Время от времени отключат�
 
 let settings;
 //Путь к JSON-файлу с настройками
-const pathToJsonFile = './static/serverSettings.json';
+const pathToJsonFile = './static/settings.json';
 // Чтение содержимого файла JSON
 try {
     const data = fs.readFileSync(pathToJsonFile, 'utf8');
@@ -45,41 +45,53 @@ function sendToSelectedClients(data, client) {
 const serverTCP = net.createServer();
 serverTCP.on('connection', (socket) => {
     console.log(`${clientConnectColor(`Client TCP connected: ${socket.remoteAddress}:${socket.remotePort}`)}`);
-
+    
+    let buffer = ''; // Буфер для хранения частично полученных данных
+    
     socket.on('data', (data) => {
-        if (clientSockets.length > 0) {
-            let jsonClients = JSON.parse(data)
-            if (jsonClients.what === "get_clientsID") {
-                let clients = []
-                console.log(clientSockets.id)
-                clientSockets.forEach(socket => {
-                    // Проверяем, подключен ли сокет
-                    if (socket.connected) {
-                        clients.push(socket.id)
-                    }
-                });
-                let clientsString = clients.join(";");
-                socket.write(clientsString);
-            }
-            else if (jsonClients.what === "update_cam") {
-                console.log(jsonClients.client);
-                sendToSelectedClients(JSON.parse(data), jsonClients.client);
-                // Отправка ответа обратно клиенту
-                const responseMessage = 'Success';
-                socket.write(responseMessage);
-            }
-            else {
-                sendToAllClients(JSON.parse(data));
-                // Отправка ответа обратно клиенту
-                const responseMessage = 'Success';
-                socket.write(responseMessage);
-            }
+        buffer += data.toString();
 
-        } else {
-            // Отправка ответа обратно клиенту о том, что нет подключенных сокетов
-            const responseMessage = 'No connected sockets';
-            socket.write(responseMessage);
-        }
+        const messages = buffer.split('\0');
+        
+        messages.forEach((message, index) => {
+            try {
+                const jsonData = JSON.parse(message);
+                // Обработка JSON-объекта дальше в соответствии с вашими требованиями
+                if (jsonData.what === "get_clientsID") {
+                    let clients = [];
+                    clientSockets.forEach(socket => {
+                        if (socket.connected) {
+                            clients.push(socket.id);
+                        }
+                    });
+                    let clientsString = clients.join(";");
+                    socket.write(clientsString);
+                } else if (jsonData.what === "update_cam") {
+                    sendToSelectedClients(jsonData, jsonData.client);
+                    const responseMessage = 'Success';
+                    socket.write(responseMessage);
+                } else if (jsonData.what === "OrbitalCam_position") {
+                    sendToSelectedClients(jsonData, jsonData.client);
+                    const responseMessage = 'Success';
+                    socket.write(responseMessage);
+                } else {
+                    sendToAllClients(jsonData);
+                    const responseMessage = 'Success';
+                    socket.write(responseMessage);
+                }
+            } catch (error) {
+                if (index === messages.length - 1) {
+                    // Если это последнее сообщение и его невозможно распарсить, 
+                    // оставляем его в буфере для дальнейшего сбора данных
+                    buffer = message;
+                } else {
+                    // Если это не последнее сообщение, и его невозможно распарсить, 
+                    // продолжаем сбор данных в буфере
+                    console.error('Error parsing JSON:', error);
+                }
+            }
+        });
+        buffer = "";
     });
 
     // Обработка закрытия соединения
