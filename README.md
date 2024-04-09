@@ -242,7 +242,13 @@
 	"what": "get_clientsID" //Обозначние json объекта
 }
 ```
-  В ответ приходит сообщение вида: `id1;id2;...`, с разделителем `;`;
+  В ответ приходит json сообщение:
+	```jsonc
+ 	{
+ 		"what": "clientsID",
+   		"clients": [ "socket1ID", "socket2ID", "socket3ID" ]
+  	}
+ 	```
 
 6. **Переключение камер определенного клиента**
 ```jsonc
@@ -256,23 +262,23 @@
 7. **Изменение положения орбитальной камеры**
 ```jsonc
 {
-	"what": "OrbitalCam_position",
-	"radius": "100",
-	"horizontalValue": "1",
-	"verticalValue": "1"
+	"what": "update_orbital",
+	"radius": 100,
+	"horizontalValue": 1,
+	"verticalValue": 1
 }
 ```
 
 8. **Изменение положения свободной камеры**
 ```jsonc
 {
-	"what": "SpectatorCam_position",
-	"positionX": "0",
-	"positionY": "0",
-	"positionZ": "0",
-	"rotationX": "0",
-	"rotationY": "0",
-	"rotationZ": "0"
+	"what": "update_spectator",
+	"positionX": 0,
+	"positionY": 0,
+	"positionZ": 0,
+	"rotationX": 0,
+	"rotationY": 0,
+	"rotationZ": 0
 }
 ```
 
@@ -307,18 +313,18 @@
     {
       "type": "Plane", //Название, для запроса на создание или удаление
       "path": "/models/airplaneFBX/airplane.fbx", //Полный путь до модели формата fbx
-      "rotationX": "0", //Поворот по оси X
-      "rotationY": "0", //Поворот по оси Y
-      "rotationZ": "0", //Поворот по оси Z
-      "scale": "0.005" //Маштаб модели
+      "rotationX": 0, //Поворот по оси X
+      "rotationY": 0, //Поворот по оси Y
+      "rotationZ": 0, //Поворот по оси Z
+      "scale": 0.005 //Маштаб модели
     },
     {
       "type": "Rocket",
       "path": "/models/rocket/Rocket.fbx",
-      "rotationX": "0",
-      "rotationY": "0",
-      "rotationZ": "0",
-      "scale": "0.001"
+      "rotationX": 0,
+      "rotationY": 0,
+      "rotationZ": 0,
+      "scale": 0.001
     }
   ]
 ```
