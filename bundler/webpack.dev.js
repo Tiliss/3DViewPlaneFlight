@@ -65,6 +65,7 @@ serverTCP.on('connection', (socket) => {
                         }
                     });
 
+
                     let jsonData = {
                         "what": "clientsID",
                         "clients": clients
@@ -72,10 +73,12 @@ serverTCP.on('connection', (socket) => {
 
                     let clientsJSON = JSON.stringify(jsonData);
                     socket.write(clientsJSON);
+
                 } else if (jsonData.what === "update_cam") {
                     sendToSelectedClients(jsonData, jsonData.client);
                     const responseMessage = 'Success';
                     socket.write(responseMessage);
+
                 } else if (jsonData.what === "update_orbital") {
                     sendToSelectedClients(jsonData, jsonData.client);
                     const responseMessage = 'Success';

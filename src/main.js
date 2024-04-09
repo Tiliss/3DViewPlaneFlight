@@ -83,11 +83,14 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
                         switchCamera();
                         viewSlider.setValue(json.name);
                         break;
+
                     case 'update_orbital': //Обновление позиции орбитальной камеры
+
                         setRadiusCockpitCamera = json.radius;
                         controls.setRadius(setRadiusCockpitCamera);
                         controls.setCameraPosition(json.horizontalValue, json.verticalValue);
                         break;
+
                     case 'update_spectator':
                         controlsFirst.setPositionAndRotation(
                             json.positionX,
@@ -211,7 +214,6 @@ let viewSlider;
 var viewOptions = { view: 'Third Person' };
 let setRadiusCockpitCamera = 150; // Расстояние от камеры до самолета
 let speedMoveCamera = 50;
-
 
 /* Обработчики событий */
 document.addEventListener('wheel', (event) => {
