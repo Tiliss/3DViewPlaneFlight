@@ -243,12 +243,12 @@
 }
 ```
   В ответ приходит json сообщение:
-	```jsonc
- 	{
- 		"what": "clientsID",
-   		"clients": [ "socket1ID", "socket2ID", "socket3ID" ]
-  	}
- 	```
+```jsonc
+{
+	"what": "clientsID",
+	"clients": [ "socket1ID", "socket2ID", "socket3ID" ]
+}
+```
 
 6. **Переключение камер определенного клиента**
 ```jsonc
