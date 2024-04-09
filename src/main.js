@@ -46,14 +46,12 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
     if (error) {
         console.error('Ошибка при загрузке файла:', error);
     } else {
-
         jsonObject = jsonData.models //Получение json с моделями
         jsonMap = jsonData.map; //Получения json с картами
         for (var i = 0; i < jsonMap.length; i++) {
             guiMapParams.mapOptions.push(jsonData.map[i].name);
         }
         dropDownMap.options(guiMapParams.mapOptions);
-
         // запуск сервера socket.io
         const socket = io(`http://${jsonData.HTTP.host}:${jsonData.WebSocket.port}`);
         socket.on('connect', () => {
@@ -61,7 +59,6 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
             const textContainerID = document.getElementById('textContainerID');
             textContainerID.innerText = `ID: ${socket.id}`;
         }); 
-
         socket.on('message', (data) => {
             try {
                 const json = JSON.parse(data);
@@ -86,12 +83,15 @@ loadJsonFile(jsonFilePath, (error, jsonData) => {
                         switchCamera();
                         viewSlider.setValue(json.name);
                         break;
-                    case 'OrbitalCam_position': //Обновление позиции орбитальной камеры
+
+                    case 'update_orbital': //Обновление позиции орбитальной камеры
+
                         setRadiusCockpitCamera = json.radius;
                         controls.setRadius(setRadiusCockpitCamera);
                         controls.setCameraPosition(json.horizontalValue, json.verticalValue);
                         break;
-                    case 'SpectatorCam_position':
+
+                    case 'update_spectator':
                         controlsFirst.setPositionAndRotation(
                             json.positionX,
                             json.positionY,
@@ -214,7 +214,6 @@ let viewSlider;
 var viewOptions = { view: 'Third Person' };
 let setRadiusCockpitCamera = 150; // Расстояние от камеры до самолета
 let speedMoveCamera = 50;
-
 
 /* Обработчики событий */
 document.addEventListener('wheel', (event) => {
@@ -570,7 +569,6 @@ function LoadModel(jsonData) {
         }
     });
 }
-
 function FBXLoadMod(jsonObject, id)
 {
     const loader = new FBXLoader(); //Создание FBX загрузчика 
@@ -589,7 +587,6 @@ function FBXLoadMod(jsonObject, id)
         fbx.name = id;
         airplaneModel = fbx;
         scene.add(fbx);
-
         const thirdPersonCamera = new ThirdPersonCamera({
             camera: camera,
             target: {
@@ -597,7 +594,6 @@ function FBXLoadMod(jsonObject, id)
                 Rotation: fbx.quaternion,
             },
         });
-
         window.thirdPersonCamera = thirdPersonCamera;
         addOption(id);
         dropDownObj.setValue(id);
@@ -625,12 +621,11 @@ function createGround() {
     else {
         groundGeo = new THREE.PlaneGeometry(30000, 30000, sliders.widthSeg, sliders.heightSeg)
         let disMap = new THREE.TextureLoader()
-            .setPath('/textures/map/') //heightmap folder
-            .load(heightMap); //heightmap filename from dat.gui choice
+            .setPath('/textures/map/') 
+            .load(heightMap); 
 
-        //horizontal vertical texture can repeat on object surface
         disMap.wrapS = disMap.wrapT = THREE.RepeatWrapping;
-        disMap.repeat.set(sliders.horTexture, sliders.vertTexture); //# horizontal & vertical textures
+        disMap.repeat.set(sliders.horTexture, sliders.vertTexture);
 
         //Текстуры
         let mapTexture = new THREE.TextureLoader().setPath('/textures/map/').load(textureMap);
